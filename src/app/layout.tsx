@@ -20,6 +20,16 @@ export const metadata: Metadata = {
   description: "A cinematic journey through your next home.",
 };
 
+// Viewport configuration for mobile address bar handling
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: 'cover', // Extends content into safe areas
+  interactiveWidget: 'resizes-content', // Handles address bar changes smoothly
+};
+
 import SmoothScrollProvider from "@/components/SmoothScrollProvider";
 import AudioController from "@/components/AudioController";
 
