@@ -55,7 +55,7 @@ export default function ScrollVideoScene({ videoSrc, texts, sceneIndex, totalSce
             trigger: spacer,
             start: "top bottom", // Começa quando o topo do spacer entra por baixo
             end: "bottom bottom", // Termina quando o fundo do spacer toca o fundo
-            scrub: 1.5,
+            scrub: true,
             onUpdate: (self) => {
                 // 1. VIDEO SCRUBBING
                 // O video roda durante todo o percurso (entrada + permanência)

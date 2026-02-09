@@ -17,10 +17,10 @@ export default function SmoothScrollProvider({
 
     return (
         <ReactLenis root options={{
-            duration: 1.8,
+            duration: 1.2,
             smoothWheel: true,
-            smoothTouch: true,
-            touchMultiplier: 1.5,
+            // smoothTouch: true, // Desativado para performance mobile
+            touchMultiplier: 2,
         } as any}>
             {children as any}
         </ReactLenis>
