@@ -37,7 +37,7 @@ export default function SmoothScrollProvider({
                 duration: isMobile ? 0.8 : 1.2, // Faster on mobile for responsiveness
                 smoothWheel: true,
                 smoothTouch: true, // Always true - enables inertia on touch
-                touchMultiplier: isMobile ? 10 : 2, // 10x on mobile for aggressive scroll
+                touchMultiplier: isMobile ? 4 : 2, // 4x on mobile (balanced)
                 syncTouch: true, // Sync touch position with scroll (prevents jumpiness)
                 syncTouchLerp: 0.1, // Smoothing for touch sync
             } as any}
