@@ -98,10 +98,11 @@ export default function FrameSequence({ frameFolder, frameCount, texts, sceneInd
             ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
         };
 
-        // Set canvas size
+        // Set canvas size - use visualViewport for mobile address bar awareness
         const resizeCanvas = () => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
+            const vv = window.visualViewport;
+            canvas.width = vv?.width ?? window.innerWidth;
+            canvas.height = vv?.height ?? window.innerHeight;
             // Redraw current frame after resize
             if (imagesRef.current[0]) {
                 drawCover(imagesRef.current[0]);
@@ -109,6 +110,8 @@ export default function FrameSequence({ frameFolder, frameCount, texts, sceneInd
         };
         resizeCanvas();
         window.addEventListener("resize", resizeCanvas);
+        // Also listen to visualViewport resize (mobile address bar changes)
+        window.visualViewport?.addEventListener("resize", resizeCanvas);
 
         // Draw first frame
         if (imagesRef.current[0]) {
@@ -157,6 +160,7 @@ export default function FrameSequence({ frameFolder, frameCount, texts, sceneInd
         return () => {
             trigger.kill();
             window.removeEventListener("resize", resizeCanvas);
+            window.visualViewport?.removeEventListener("resize", resizeCanvas);
         };
     }, [isLoaded, frameCount, sceneIndex]);
 

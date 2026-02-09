@@ -1,16 +1,20 @@
 "use client";
 
 import { ReactLenis } from "@studio-freight/react-lenis";
-import { useLayoutEffect, useState, useEffect } from "react";
+import { useLayoutEffect, useState } from "react";
 
 export default function SmoothScrollProvider({
     children,
 }: {
     children: React.ReactNode;
 }) {
-    const [isMobile, setIsMobile] = useState(false);
+    // Start with mobile settings (mobile-first) to ensure touch works immediately
+    const [isMobile, setIsMobile] = useState(true);
+    const [isClient, setIsClient] = useState(false);
 
     useLayoutEffect(() => {
+        setIsClient(true);
+
         if (typeof window !== "undefined") {
             window.history.scrollRestoration = "manual";
             window.scrollTo(0, 0);
@@ -22,14 +26,24 @@ export default function SmoothScrollProvider({
         }
     }, []);
 
+    // Key forces Lenis to completely reinitialize when device type changes
+    const lenisKey = isClient ? `lenis-${isMobile ? 'mobile' : 'desktop'}` : 'lenis-init';
+
     return (
-        <ReactLenis root options={{
-            duration: 1.2,
-            smoothWheel: true,
-            smoothTouch: isMobile, // Ativa inércia customizada apenas no mobile
-            touchMultiplier: isMobile ? 8 : 2, // 8x: scroll agressivo no mobile
-        } as any}>
+        <ReactLenis
+            key={lenisKey}
+            root
+            options={{
+                duration: isMobile ? 0.8 : 1.2, // Faster on mobile for responsiveness
+                smoothWheel: true,
+                smoothTouch: true, // Always true - enables inertia on touch
+                touchMultiplier: isMobile ? 10 : 2, // 10x on mobile for aggressive scroll
+                syncTouch: true, // Sync touch position with scroll (prevents jumpiness)
+                syncTouchLerp: 0.1, // Smoothing for touch sync
+            } as any}
+        >
             {children as any}
         </ReactLenis>
     );
 }
+
