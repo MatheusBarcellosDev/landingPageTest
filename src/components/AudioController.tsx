@@ -39,12 +39,24 @@ export default function AudioController() {
 
         attemptPlay();
 
-        window.addEventListener('click', handleInteraction);
-        window.addEventListener('scroll', handleInteraction); // Scroll as vezes não conta como interação válida para áudio, mas click sim.
+        const events = ['click', 'touchstart', 'pointerdown', 'keydown', 'scroll'];
+
+        const handleInteractionWrapper = () => {
+            handleInteraction();
+            // Clean up all listeners
+            events.forEach(event => {
+                window.removeEventListener(event, handleInteractionWrapper);
+            });
+        };
+
+        events.forEach(event => {
+            window.addEventListener(event, handleInteractionWrapper, { once: true });
+        });
 
         return () => {
-            window.removeEventListener('click', handleInteraction);
-            window.removeEventListener('scroll', handleInteraction);
+            events.forEach(event => {
+                window.removeEventListener(event, handleInteractionWrapper);
+            });
         };
     }, []);
 
