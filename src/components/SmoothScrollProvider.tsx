@@ -27,7 +27,7 @@ export default function SmoothScrollProvider({
             duration: 1.2,
             smoothWheel: true,
             smoothTouch: isMobile, // Ativa inércia customizada apenas no mobile
-            touchMultiplier: isMobile ? 5 : 2, // 5x: "Uma roladinha rola muito"
+            touchMultiplier: isMobile ? 8 : 2, // 8x: scroll agressivo no mobile
         } as any}>
             {children as any}
         </ReactLenis>
