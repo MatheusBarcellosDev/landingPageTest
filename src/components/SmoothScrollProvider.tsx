@@ -8,13 +8,9 @@ export default function SmoothScrollProvider({
 }: {
     children: React.ReactNode;
 }) {
-    // Start with mobile settings (mobile-first) to ensure touch works immediately
-    const [isMobile, setIsMobile] = useState(true);
-    const [isClient, setIsClient] = useState(false);
+    const [isMobile, setIsMobile] = useState<boolean | null>(null);
 
     useLayoutEffect(() => {
-        setIsClient(true);
-
         if (typeof window !== "undefined") {
             window.history.scrollRestoration = "manual";
             window.scrollTo(0, 0);
@@ -26,24 +22,28 @@ export default function SmoothScrollProvider({
         }
     }, []);
 
-    // Key forces Lenis to completely reinitialize when device type changes
-    const lenisKey = isClient ? `lenis-${isMobile ? 'mobile' : 'desktop'}` : 'lenis-init';
+    // Loading state
+    if (isMobile === null) {
+        return <>{children}</>;
+    }
 
+    // MOBILE: Use native scroll (no Lenis) - allows scroll-snap to work
+    if (isMobile) {
+        return <>{children}</>;
+    }
+
+    // DESKTOP: Use Lenis for smooth scroll-driven video experience
     return (
         <ReactLenis
-            key={lenisKey}
             root
             options={{
-                duration: isMobile ? 0.8 : 1.2, // Faster on mobile for responsiveness
+                duration: 1.2,
                 smoothWheel: true,
-                smoothTouch: true, // Always true - enables inertia on touch
-                touchMultiplier: isMobile ? 4 : 2, // 4x on mobile (balanced)
-                syncTouch: true, // Sync touch position with scroll (prevents jumpiness)
-                syncTouchLerp: 0.1, // Smoothing for touch sync
-            } as any}
+            }}
         >
-            {children as any}
+            {children}
         </ReactLenis>
     );
 }
+
 
