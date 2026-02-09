@@ -72,17 +72,47 @@ export default function FrameSequence({ frameFolder, frameCount, texts, sceneInd
         const ctx = canvas.getContext("2d");
         if (!ctx) return;
 
+        // Helper: Draw image with "cover" behavior (maintain aspect ratio, fill canvas)
+        const drawCover = (img: HTMLImageElement) => {
+            if (!img || !img.complete || img.naturalWidth === 0) return;
+
+            const canvasRatio = canvas.width / canvas.height;
+            const imgRatio = img.naturalWidth / img.naturalHeight;
+
+            let drawWidth, drawHeight, offsetX, offsetY;
+
+            if (imgRatio > canvasRatio) {
+                // Image is wider than canvas (crop sides)
+                drawHeight = canvas.height;
+                drawWidth = img.naturalWidth * (canvas.height / img.naturalHeight);
+                offsetX = (canvas.width - drawWidth) / 2;
+                offsetY = 0;
+            } else {
+                // Image is taller than canvas (crop top/bottom)
+                drawWidth = canvas.width;
+                drawHeight = img.naturalHeight * (canvas.width / img.naturalWidth);
+                offsetX = 0;
+                offsetY = (canvas.height - drawHeight) / 2;
+            }
+
+            ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
+        };
+
         // Set canvas size
         const resizeCanvas = () => {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
+            // Redraw current frame after resize
+            if (imagesRef.current[0]) {
+                drawCover(imagesRef.current[0]);
+            }
         };
         resizeCanvas();
         window.addEventListener("resize", resizeCanvas);
 
         // Draw first frame
         if (imagesRef.current[0]) {
-            ctx.drawImage(imagesRef.current[0], 0, 0, canvas.width, canvas.height);
+            drawCover(imagesRef.current[0]);
         }
 
         // Initial State
@@ -98,17 +128,17 @@ export default function FrameSequence({ frameFolder, frameCount, texts, sceneInd
             end: "bottom bottom",
             scrub: true,
             onUpdate: (self) => {
-                // Calculate which frame to show
-                const frameIndex = Math.min(
-                    Math.floor(self.progress * frameCount),
+                // Calculate which frame to show (clamp to valid range)
+                const frameIndex = Math.max(0, Math.min(
+                    Math.floor(self.progress * (frameCount - 1)),
                     frameCount - 1
-                );
+                ));
 
-                // Draw the frame
+                // Draw the frame only if image exists and is loaded
                 const img = imagesRef.current[frameIndex];
-                if (img && ctx) {
+                if (img && img.complete && img.naturalWidth > 0) {
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
-                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    drawCover(img);
                 }
 
                 scrollProgress.set(self.progress);
