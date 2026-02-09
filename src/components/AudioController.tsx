@@ -24,18 +24,7 @@ export default function AudioController() {
             }
         };
 
-        // Tenta tocar na primeira interação do usuário (scroll ou click)
-        const handleInteraction = () => {
-            if (audioRef.current && (audioRef.current.paused || isMuted)) {
-                audioRef.current.play().then(() => {
-                    setIsPlaying(true);
-                    setIsMuted(false);
-                }).catch(e => console.error(e));
-            }
-            // Remove listeners após primeira interação bem sucedida
-            window.removeEventListener('click', handleInteraction);
-            window.removeEventListener('scroll', handleInteraction);
-        };
+
 
         attemptPlay();
 
