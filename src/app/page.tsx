@@ -1,10 +1,13 @@
 "use client";
 
 import ScrollVideoScene from "@/components/ScrollVideoScene";
+import FrameSequence from "@/components/FrameSequence";
 
 const scenes = [
   {
     videoSrc: "/videos/scene1.mp4",
+    frameFolder: "/frames/entrada", // Mobile frames
+    frameCount: 73,
     texts: [
       { content: "O Respiro que Você Merece.", start: 0.05, end: 0.25 },
       { content: "Conexão Pura com o Essencial.", start: 0.40, end: 0.55 },
@@ -62,23 +65,29 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 export default function Home() {
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [isContactVisible, setIsContactVisible] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const footerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    gsap.registerPlugin(ScrollTrigger); // Register ScrollTrigger once
+    gsap.registerPlugin(ScrollTrigger);
+
+    // Mobile detection
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
 
     if (!footerRef.current) return;
 
     ScrollTrigger.create({
       trigger: footerRef.current,
-      start: "top bottom-=100", // Quando o topo do footer estiver a 100px de entrar
+      start: "top bottom-=100",
       onEnter: () => setIsContactVisible(true),
       onLeaveBack: () => setIsContactVisible(false),
     });
 
-    // Cleanup function for ScrollTrigger
     return () => {
       ScrollTrigger.getAll().forEach(trigger => trigger.kill());
+      window.removeEventListener('resize', checkMobile);
     };
   }, []);
 
@@ -86,18 +95,27 @@ export default function Home() {
     <main className="relative bg-black min-h-screen">
       {scenes.map((scene, idx) => (
         <div key={idx} className={idx > 0 ? "-mt-[30vh]" : ""}>
-          <ScrollVideoScene
-            videoSrc={scene.videoSrc}
-            texts={scene.texts}
-            sceneIndex={idx}
-            totalScenes={scenes.length}
-          />
+          {/* Scene 1: Use FrameSequence on mobile */}
+          {idx === 0 && isMobile && scene.frameFolder ? (
+            <FrameSequence
+              frameFolder={scene.frameFolder}
+              frameCount={scene.frameCount!}
+              texts={scene.texts}
+              sceneIndex={idx}
+            />
+          ) : (
+            <ScrollVideoScene
+              videoSrc={scene.videoSrc}
+              texts={scene.texts}
+              sceneIndex={idx}
+              totalScenes={scenes.length}
+            />
+          )}
         </div>
       ))}
 
       {/* Elemento final para garantir scroll até o fim e trigger do card */}
       <div ref={footerRef} className="h-[50vh] bg-black flex items-end justify-center pb-20 pointer-events-none">
-        {/* Opcional: Texto final sutil */}
         <p className="text-white/20 text-xs tracking-[0.5em] font-sans uppercase">EXPERIÊNCIA IMERSIVA</p>
       </div>
 
@@ -106,3 +124,4 @@ export default function Home() {
     </main>
   );
 }
+
