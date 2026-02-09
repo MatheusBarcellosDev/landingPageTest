@@ -1,13 +1,11 @@
 "use client";
 
 import ScrollVideoScene from "@/components/ScrollVideoScene";
-import FrameSequence from "@/components/FrameSequence";
+import MobileSwipeCarousel from "@/components/MobileSwipeCarousel";
 
 const scenes = [
   {
     videoSrc: "/videos/scene1.mp4",
-    frameFolder: "/frames/entrada", // Mobile frames
-    frameCount: 73,
     texts: [
       { content: "O Respiro que Você Merece.", start: 0.05, end: 0.25 },
       { content: "Conexão Pura com o Essencial.", start: 0.40, end: 0.55 },
@@ -16,8 +14,6 @@ const scenes = [
   },
   {
     videoSrc: "/videos/scene2.mp4",
-    frameFolder: "/frames/halldeentrada", // Mobile frames
-    frameCount: 73,
     texts: [
       { content: "Arquitetura que Acolhe.", start: 0.15, end: 0.30 },
       { content: "A Harmonia da Luz Natural.", start: 0.40, end: 0.55 },
@@ -67,7 +63,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 export default function Home() {
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [isContactVisible, setIsContactVisible] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState<boolean | null>(null); // null = loading
   const footerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -78,45 +74,60 @@ export default function Home() {
     checkMobile();
     window.addEventListener('resize', checkMobile);
 
-    if (!footerRef.current) return;
-
-    ScrollTrigger.create({
-      trigger: footerRef.current,
-      start: "top bottom-=100",
-      onEnter: () => setIsContactVisible(true),
-      onLeaveBack: () => setIsContactVisible(false),
-    });
-
     return () => {
       ScrollTrigger.getAll().forEach(trigger => trigger.kill());
       window.removeEventListener('resize', checkMobile);
     };
   }, []);
 
+  // Desktop ScrollTrigger for contact card
+  useEffect(() => {
+    if (isMobile || !footerRef.current) return;
+
+    const trigger = ScrollTrigger.create({
+      trigger: footerRef.current,
+      start: "top bottom-=100",
+      onEnter: () => setIsContactVisible(true),
+      onLeaveBack: () => setIsContactVisible(false),
+    });
+
+    return () => trigger.kill();
+  }, [isMobile]);
+
+  // Loading state - avoid flash
+  if (isMobile === null) {
+    return <div className="h-screen w-screen bg-black" />;
+  }
+
+  // MOBILE: Swipe Carousel Experience
+  if (isMobile) {
+    return (
+      <main className="bg-black">
+        <MobileSwipeCarousel
+          scenes={scenes}
+          onComplete={() => setIsContactVisible(true)}
+        />
+        <ContactCard isVisible={isContactVisible} onOpenGallery={() => setIsGalleryOpen(true)} />
+        <GalleryModal isOpen={isGalleryOpen} onClose={() => setIsGalleryOpen(false)} />
+      </main>
+    );
+  }
+
+  // DESKTOP: Scroll-driven Video Experience
   return (
     <main className="relative bg-black min-h-screen">
       {scenes.map((scene, idx) => (
         <div key={idx} className={idx > 0 ? "-mt-[30vh]" : ""}>
-          {/* Use FrameSequence on mobile for scenes with frames */}
-          {isMobile && scene.frameFolder ? (
-            <FrameSequence
-              frameFolder={scene.frameFolder}
-              frameCount={scene.frameCount!}
-              texts={scene.texts}
-              sceneIndex={idx}
-            />
-          ) : (
-            <ScrollVideoScene
-              videoSrc={scene.videoSrc}
-              texts={scene.texts}
-              sceneIndex={idx}
-              totalScenes={scenes.length}
-            />
-          )}
+          <ScrollVideoScene
+            videoSrc={scene.videoSrc}
+            texts={scene.texts}
+            sceneIndex={idx}
+            totalScenes={scenes.length}
+          />
         </div>
       ))}
 
-      {/* Elemento final para garantir scroll até o fim e trigger do card */}
+      {/* Footer trigger for contact card */}
       <div ref={footerRef} className="h-[50vh] bg-black flex items-end justify-center pb-20 pointer-events-none">
         <p className="text-white/20 text-xs tracking-[0.5em] font-sans uppercase">EXPERIÊNCIA IMERSIVA</p>
       </div>
@@ -126,4 +137,5 @@ export default function Home() {
     </main>
   );
 }
+
 
