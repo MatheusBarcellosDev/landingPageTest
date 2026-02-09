@@ -16,6 +16,8 @@ const scenes = [
   },
   {
     videoSrc: "/videos/scene2.mp4",
+    frameFolder: "/frames/halldeentrada", // Mobile frames
+    frameCount: 73,
     texts: [
       { content: "Arquitetura que Acolhe.", start: 0.15, end: 0.30 },
       { content: "A Harmonia da Luz Natural.", start: 0.40, end: 0.55 },
@@ -95,8 +97,8 @@ export default function Home() {
     <main className="relative bg-black min-h-screen">
       {scenes.map((scene, idx) => (
         <div key={idx} className={idx > 0 ? "-mt-[30vh]" : ""}>
-          {/* Scene 1: Use FrameSequence on mobile */}
-          {idx === 0 && isMobile && scene.frameFolder ? (
+          {/* Use FrameSequence on mobile for scenes with frames */}
+          {isMobile && scene.frameFolder ? (
             <FrameSequence
               frameFolder={scene.frameFolder}
               frameCount={scene.frameCount!}
