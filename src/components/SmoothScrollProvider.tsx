@@ -1,3 +1,5 @@
+"use client";
+
 import { ReactLenis } from "@studio-freight/react-lenis";
 import { useLayoutEffect, useState, useEffect } from "react";
 
