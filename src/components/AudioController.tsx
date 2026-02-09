@@ -39,24 +39,35 @@ export default function AudioController() {
 
         attemptPlay();
 
-        const events = ['click', 'touchstart', 'pointerdown', 'keydown', 'scroll'];
-
-        const handleInteractionWrapper = () => {
-            handleInteraction();
-            // Clean up all listeners
-            events.forEach(event => {
-                window.removeEventListener(event, handleInteractionWrapper);
-            });
+        const handleInteraction = () => {
+            if (audioRef.current) {
+                // Tenta tocar se estiver pausado OU mudo
+                if (audioRef.current.paused || isMuted) {
+                    audioRef.current.play()
+                        .then(() => {
+                            setIsPlaying(true);
+                            setIsMuted(false);
+                            // Sucesso! Remove listeners
+                            window.removeEventListener('click', handleInteraction);
+                            window.removeEventListener('touchstart', handleInteraction);
+                            window.removeEventListener('keydown', handleInteraction);
+                        })
+                        .catch(e => {
+                            // Falhou (browser bloqueou). Deixa listeners ativos para próxima tentativa.
+                            console.log("Audio unlock failed, waiting for next interaction");
+                        });
+                }
+            }
         };
 
-        events.forEach(event => {
-            window.addEventListener(event, handleInteractionWrapper, { once: true });
-        });
+        window.addEventListener('click', handleInteraction);
+        window.addEventListener('touchstart', handleInteraction);
+        window.addEventListener('keydown', handleInteraction);
 
         return () => {
-            events.forEach(event => {
-                window.removeEventListener(event, handleInteractionWrapper);
-            });
+            window.removeEventListener('click', handleInteraction);
+            window.removeEventListener('touchstart', handleInteraction);
+            window.removeEventListener('keydown', handleInteraction);
         };
     }, []);
 
